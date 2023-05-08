@@ -1,0 +1,5 @@
+.wireit/
+lib/
+node_modules/
+dist/
+tsconfig.tsbuildinfo

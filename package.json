@@ -1,0 +1,24 @@
+{
+  "name": "@looptimize/in-cart-upsell",
+  "version": "0.0.1",
+  "description": "An in cart upsell feature designed for Boom by Cindy Joseph",
+  "main": "index.js",
+  "scripts": {
+    "build:js": "wireit"
+  },
+  "wireit": {
+    "build:js": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": ["src/**/*.ts", "tsconfig.json"],
+      "output": ["lib/**", ".tsbuildinfo"]
+    }
+  },
+  "author": "Looptimize",
+  "license": "SEE LICENSE IN license.txt",
+  "devDependencies": {
+    "esbuild": "^0.17.18",
+    "typescript": "^5.0.4",
+    "wireit": "^0.9.5"
+  }
+}
