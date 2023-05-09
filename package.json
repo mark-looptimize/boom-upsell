@@ -4,14 +4,39 @@
   "description": "An in cart upsell feature designed for Boom by Cindy Joseph",
   "main": "index.js",
   "scripts": {
-    "build:js": "wireit"
+    "build:debug": "wireit",
+    "build:prod": "wireit"
   },
   "wireit": {
-    "build:js": {
+    "build:typescript": {
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "files": ["src/**/*.ts", "tsconfig.json"],
       "output": ["lib/**", ".tsbuildinfo"]
+    },
+    "build:debug": {
+      "command": "esbuild lib/index.js --bundle --sourcemap --format=esm --outdir=dist",
+      "files": [
+        "lib/**/*.js"
+      ],
+      "output": [
+        "dist/**/*.*"
+      ],
+      "dependencies": [
+        "build:typescript"
+      ]
+    },
+    "build:prod": {
+      "command": "esbuild lib/index.js --bundle --minify --format=esm --outdir=dist",
+      "files": [
+        "lib/**/*.js"
+      ],
+      "output": [
+        "dist/**/*.*"
+      ],
+      "dependencies": [
+        "build:typescript"
+      ]
     }
   },
   "author": "Looptimize",
