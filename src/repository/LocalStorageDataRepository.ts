@@ -1,11 +1,33 @@
-import { DataRepository, InCartItem, ProductViewData } from "./DataRepositoryInterface.js";
+import { DataRepository, InCartItem, InMemoryDatabase, Item, ItemViewData, ProductViewData } from "./DataRepositoryInterface.js";
+
+const localStorageKey = 'looptimize_icu';
 
 export class LocalStorageDataRepository implements DataRepository {
-  #localStorageKey: string;
+  
+  #productViews: InMemoryDatabase;
 
-  constructor() {
-    this.#localStorageKey = '__kla_viewed';
+  constructor(){
+    this.#productViews = this.#fetchDataFromLocalStorage();
   }
+
+  registerItemView(item: Item): void {
+    const productId = item.ProductID;
+
+    if (this.#productViews.has(productId)) {
+      // Increment the view count
+      const productViewData = this.#productViews.get(productId)!;
+      productViewData.views++;
+      this.#productViews.set(productId, productViewData);
+    } else {
+      this.#productViews.set(productId, {
+        product: item,
+        views: 1
+      });
+    }
+
+    this.#persistData();
+  }
+
   getInCartProducts(): InCartItem[] {
     if(window.OCUIncart.cart_items !== undefined){
       const inCartItems = window.OCUIncart.cart_items as InCartItem[];
@@ -15,14 +37,28 @@ export class LocalStorageDataRepository implements DataRepository {
     throw new Error("Unable to determine in cart items");
   }
 
+  get productsViewed(): InMemoryDatabase {
+    this.#productViews = this.#fetchDataFromLocalStorage();
+    return this.#productViews;
+  }
+
   getItemsViewed(): ProductViewData[] {
-    const dataSource = window.localStorage.getItem(this.#localStorageKey);
+    throw new Error("Method not implemented.");
+  }
 
-    if (dataSource === null) {
-      throw new Error("Data Source Not Found");
+  #persistData(): void {
+    const serializedData = JSON.stringify(this.#productViews);
+    window.localStorage.setItem(localStorageKey, serializedData);
+  }
+
+  #fetchDataFromLocalStorage(): InMemoryDatabase {
+    const localStorageData = window.localStorage.getItem(localStorageKey);
+
+    if (localStorageData === null) {
+      return new Map<number, ItemViewData>();
+    } else {
+      const deserializedData: InMemoryDatabase = JSON.parse(localStorageData);
+      return deserializedData;
     }
-
-    const parsedData = JSON.parse(dataSource) as ProductViewData[];
-    return parsedData;
   }
 }

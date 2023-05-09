@@ -1,10 +1,8 @@
-import { FeatureConfiguration, InCartUpsellService } from "./InCartUpsellService.js";
-import { FakeDataRepository } from "./repository/FakeDataRepository.js";
-import { BlendedUpsellStrategy } from "./strategies/BlendedUpsellStrategy.js";
+import { DataSource, FeatureConfiguration, InCartUpsellService, UpsellStrategyOption } from "./InCartUpsellService.js";
 
 const inCartUpsellTestConfig: FeatureConfiguration = {
-  enabled: true,
-  upsellStrategy: new BlendedUpsellStrategy(new FakeDataRepository())
+  dataSource: DataSource.TEST,
+  upsellStrategy: UpsellStrategyOption.BLENDED
 };
 
 const inCartUpsell = new InCartUpsellService(inCartUpsellTestConfig);
