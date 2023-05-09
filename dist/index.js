@@ -295,4 +295,7 @@ var inCartUpsellConfig = {
   upsellStrategy: UpsellStrategyOption.BLENDED
 };
 var inCartUpsell = new InCartUpsellService(inCartUpsellConfig);
+export {
+  inCartUpsell
+};
 //# sourceMappingURL=index.js.map
