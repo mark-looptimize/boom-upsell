@@ -1,3 +1,4 @@
+import { ServiceLogger } from "./Logger.js";
 import { UpsellOfferInstaller } from "./UpsellOfferInstaller.js";
 import { DataRepository, Item } from "./repository/DataRepositoryInterface.js";
 import { LocalStorageDataRepository } from "./repository/LocalStorageDataRepository.js";
@@ -15,28 +16,31 @@ export interface FeatureConfiguration {
 }
 
 export class InCartUpsellService {
+  #config: FeatureConfiguration;
+
   #dataRepository: DataRepository
 
-  #upsellStrategy: UpsellStrategy
+  #upsellStrategy?: UpsellStrategy
 
   #upsellProduct?: Item
 
-  #eligibleForTest: boolean;
+  #eligibleForTest: boolean = false;;
 
   constructor(config: FeatureConfiguration) {
-    this.#dataRepository = this.#getDataRepository(config.dataSource);
-    this.#upsellStrategy = this.#initializeUpsellStrategy(config.upsellStrategy, this.#dataRepository);
-    this.#eligibleForTest = this.#isUserEligibleForTest();
-    if (this.#eligibleForTest) {
-      this.#onTestEligibility();
+    if (config.debugMode === true) {
+      ServiceLogger.debugMode = true;
+      ServiceLogger.log("Debug Mode Enabled");
     }
+    this.#config = config;
+    this.#dataRepository = this.#getDataRepository(config.dataSource);
   }
 
   /**
    * Registers a page view for a given item
    */
-  public registerProductView() {
+  public registerProductView(): void {
     if (window.item === undefined || window.item === null) {
+      ServiceLogger.error("No Item found on the page");
       return;
     } else {
       const item: Item = window.item;
@@ -44,18 +48,26 @@ export class InCartUpsellService {
     }
   }
 
+  /**
+   * Checks if we should include the user in the test
+   */
+  public checkTestEligibility(): void {
+    this.#upsellStrategy = this.#initializeUpsellStrategy(this.#config.upsellStrategy, this.#dataRepository);
+    this.#eligibleForTest = this.#isUserEligibleForTest();
+    if (this.#eligibleForTest) {
+      this.#onTestEligibility();
+    }
+  }
+
   #isUserEligibleForTest(): boolean {
     try {
       this.#checkForDealbreakers();
-      this.#upsellProduct = this.#upsellStrategy.findBestOffer();
+      this.#upsellProduct = this.#upsellStrategy!.findBestOffer();
       // The user is eligible for the test!
       // Only now should we figure out if we should show A or B not before.
       return true;
     } catch (error: any) {
-      window.dataLayer?.push({
-        "event": "exception",
-        "details": error.message
-      });
+      ServiceLogger.error(error.message);
       return false;
     }
   }
@@ -81,6 +93,8 @@ export class InCartUpsellService {
     window.dataLayer?.push({
       "event": "in_cart_upsell_test_trigger"
     });
+
+    ServiceLogger.log("Eligible for Experiment");
   }
 
   #initializeUpsellStrategy(option: UpsellStrategyOption, dataSource: DataRepository): UpsellStrategy{
@@ -102,15 +116,11 @@ export class InCartUpsellService {
   }
 
   #implementControlExperience(){
-    window.dataLayer?.push({
-      "event": "upsell_default_experience"
-    });
+    ServiceLogger.log("Implementing Default Experience");
   }
 
   #implementVariantExperience(){
-    window.dataLayer?.push({
-      "event": "upsell_variant_experience"
-    });
+    ServiceLogger.log("Implementing Variant Experience");
 
     // Disable the default experience
     window.OCUIncart = null;

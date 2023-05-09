@@ -1,3 +1,4 @@
+import { ServiceLogger } from "../Logger.js";
 import { DataRepository, InMemoryDatabase, Item, ItemViewData } from "../repository/DataRepositoryInterface.js";
 import { UpsellStrategy } from "./UpsellStrategyInterface.js";
 
@@ -17,6 +18,7 @@ export class BlendedUpsellStrategy implements UpsellStrategy {
   findBestOffer(): Item {
     const itemsInCart = this.#dataRepository.itemsInCart;
     const viewedItems = this.#dataRepository.productsViewed;
+    ServiceLogger.log(`Finding the best offer. Current Items in cart: ${itemsInCart.length} Total Viewed Products: ${viewedItems.size} `);
     const rankedItems = this.#rankItems(viewedItems);
 
     let bestOffer: Item | undefined;
@@ -26,11 +28,13 @@ export class BlendedUpsellStrategy implements UpsellStrategy {
     // https://masteringjs.io/tutorials/fundamentals/foreach-break
     rankedItems.every(item => {
       const productId = item.product.ProductID;
-      const matchingItemInCart = itemsInCart.find(item => item.product_id = productId);
+      const matchingItemInCart = itemsInCart.find(item => {item.product_id = productId});
       if (!matchingItemInCart) {
+        ServiceLogger.log(`Upsell Offer found: ${item.product.Name}`)
         bestOffer = item.product;
         return false;
       }
+      ServiceLogger.log(`${item.product.Name} is already in the cart`);
       return true;
     });
 
@@ -67,6 +71,7 @@ export class BlendedUpsellStrategy implements UpsellStrategy {
   
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#description
   #compareProductViews(a: ItemViewData, b: ItemViewData): number{
+    ServiceLogger.log(`Comparing Upsell Score. ${a.product.Name} with ${a.score} points and ${b.product.Name} with ${b.score} points`);
     if (a.score === undefined || b.score === undefined) {
       return 0;
     }
