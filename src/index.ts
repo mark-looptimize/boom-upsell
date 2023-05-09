@@ -5,4 +5,4 @@ const inCartUpsellConfig: FeatureConfiguration = {
   upsellStrategy: UpsellStrategyOption.BLENDED
 };
 
-const inCartUpsell = new InCartUpsellService(inCartUpsellConfig); 
+export const inCartUpsell = new InCartUpsellService(inCartUpsellConfig); 
