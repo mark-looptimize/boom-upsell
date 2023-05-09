@@ -32,11 +32,6 @@ export class InCartUpsellService {
     }
   }
 
-  // Call this method only in the variant version. 
-  static disableDefaultUpsellMethod(): void {
-    window.OCUIncart = null;
-  }
-
   /**
    * Registers a page view for a given item
    */
@@ -73,19 +68,19 @@ export class InCartUpsellService {
   }
 
   #onTestEligibility(): void {
-    // Quick safety check
+    // Step 1: Quick safety check
     if (this.#upsellProduct === undefined) {
       throw new Error("Upsell Product is not defined");
     }
 
-    // Step 1: Communicate test eligibility with the testing tool via custom event
+    // Step 2: Install an event listener
+    window.addEventListener('upsell_test_control', this.#implementControlExperience);
+    window.addEventListener('upsell_variant_group', this.#implementVariantExperience);
+
+    // Step 3: Communicate test eligibility with the testing tool via custom event
     window.dataLayer?.push({
       "event": "in_cart_upsell_test_trigger"
     });
-
-    // Step 2: Add the offer to the page but hide it by default and use the testing tool 
-    // to unhide it for those not in the control group.
-    new UpsellOfferInstaller(this.#upsellProduct);
   }
 
   #initializeUpsellStrategy(option: UpsellStrategyOption, dataSource: DataRepository): UpsellStrategy{
@@ -104,5 +99,22 @@ export class InCartUpsellService {
       default:
         throw new Error("Invalid Data Source option");
     }
+  }
+
+  #implementControlExperience(){
+    window.dataLayer?.push({
+      "event": "upsell_default_experience"
+    });
+  }
+
+  #implementVariantExperience(){
+    window.dataLayer?.push({
+      "event": "upsell_variant_experience"
+    });
+
+    // Disable the default experience
+    window.OCUIncart = null;
+
+    new UpsellOfferInstaller(this.#upsellProduct!);
   }
 }
