@@ -1,4 +1,5 @@
 interface Window {
   dataLayer?: object[];
-  OCUIncart?: OcuIncartService; 
+  OCUIncart?: OcuIncartService;
+  item?: Item;
 }

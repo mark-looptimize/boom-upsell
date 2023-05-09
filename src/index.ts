@@ -1,8 +1,8 @@
 import { DataSource, FeatureConfiguration, InCartUpsellService, UpsellStrategyOption } from "./InCartUpsellService.js";
 
-const inCartUpsellTestConfig: FeatureConfiguration = {
-  dataSource: DataSource.TEST,
+const inCartUpsellConfig: FeatureConfiguration = {
+  dataSource: DataSource.LOCAL_STORAGE,
   upsellStrategy: UpsellStrategyOption.BLENDED
 };
 
-const inCartUpsell = new InCartUpsellService(inCartUpsellTestConfig);
+const inCartUpsell = new InCartUpsellService(inCartUpsellConfig); 

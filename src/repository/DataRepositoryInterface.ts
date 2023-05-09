@@ -1,27 +1,9 @@
 export interface DataRepository {
-  getItemsViewed(): ProductViewData[]
-  getInCartProducts(): InCartItem[]
+  get itemsInCart(): InCartItem[]
   registerItemView(item: Item): void
   get productsViewed(): InMemoryDatabase
 }
 
-export interface ProductInfo {
-  Title: string,
-  Url: string,
-  ItemId: number,
-  LastViewedDate: number,
-  ImageUrl: string,
-  Categories: string[],
-  Metadata: ProductMetadata
-}
-
-export type ProductViewData = [ProductInfo, number];
-
-export interface ProductMetadata {
-  Brand: string,
-  Price: string,
-  CompareAtPrice: string,
-}
 
 export interface InCartItem {
   product_id: number,
@@ -48,6 +30,7 @@ export interface Item {
 
 export interface ItemViewData {
   views: number,
+  score?: number,
   product: Item
 }
 

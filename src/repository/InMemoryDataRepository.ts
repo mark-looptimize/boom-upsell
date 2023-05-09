@@ -1,4 +1,4 @@
-import { DataRepository, InCartItem, InMemoryDatabase, Item, ItemViewData, ProductViewData } from "./DataRepositoryInterface.js";
+import { DataRepository, InCartItem, InMemoryDatabase, Item, ItemViewData } from "./DataRepositoryInterface.js";
 
 export class InMemoryDataRepository implements DataRepository {
   
@@ -20,7 +20,7 @@ export class InMemoryDataRepository implements DataRepository {
     }
   }
 
-  getInCartProducts(): InCartItem[] {
+  get itemsInCart(): InCartItem[] {
     const inCartItems: InCartItem[] = [{
       product_id: 6678277816433,
       quantity: 1,
@@ -33,9 +33,5 @@ export class InMemoryDataRepository implements DataRepository {
 
   get productsViewed(): InMemoryDatabase {
     return this.#productViews;
-  }
-
-  getItemsViewed(): ProductViewData[] {
-    throw new Error("Method not implemented.");
   }
 }

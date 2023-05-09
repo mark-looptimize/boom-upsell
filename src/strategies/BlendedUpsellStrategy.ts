@@ -1,4 +1,4 @@
-import { DataRepository, ProductInfo, ProductViewData } from "../repository/DataRepositoryInterface.js";
+import { DataRepository, InMemoryDatabase, Item, ItemViewData } from "../repository/DataRepositoryInterface.js";
 import { UpsellStrategy } from "./UpsellStrategyInterface.js";
 
 /*
@@ -14,21 +14,21 @@ export class BlendedUpsellStrategy implements UpsellStrategy {
     this.#dataRepository = dataRepository;
   }
 
-  findBestOffer(): ProductInfo {
-    const itemsInCart = this.#dataRepository.getInCartProducts();
-    const viewedItems = this.#dataRepository.getItemsViewed();
+  findBestOffer(): Item {
+    const itemsInCart = this.#dataRepository.itemsInCart;
+    const viewedItems = this.#dataRepository.productsViewed;
     const rankedItems = this.#rankItems(viewedItems);
 
-    let bestOffer: ProductInfo | undefined;
+    let bestOffer: Item | undefined;
 
     // Move through the ranked list of product views and check if that item
     // already exists in the cart and stop looking when we find a match
     // https://masteringjs.io/tutorials/fundamentals/foreach-break
-    rankedItems.every(product => {
-      const productId = product[0].ItemId;
+    rankedItems.every(item => {
+      const productId = item.product.ProductID;
       const matchingItemInCart = itemsInCart.find(item => item.product_id = productId);
       if (!matchingItemInCart) {
-        bestOffer = product[0];
+        bestOffer = item.product;
         return false;
       }
       return true;
@@ -42,10 +42,9 @@ export class BlendedUpsellStrategy implements UpsellStrategy {
     throw new Error("No suitable upsell offer found");
   }
 
-  #calculateUpsellScore(productViewData: ProductViewData): number{
-    const productInfo = productViewData[0];
-    const productViewCount = productViewData[1];
-    const productPrice = parseFloat(productInfo.Metadata.Price.substring(1));
+  #calculateUpsellScore(itemViewData: ItemViewData): number{
+    const productViewCount = itemViewData.views;
+    const productPrice = parseFloat(itemViewData.product.Price.substring(1));
 
     const upsellScore = productViewCount * productPrice;
     return upsellScore;
@@ -53,25 +52,30 @@ export class BlendedUpsellStrategy implements UpsellStrategy {
 
   // Assign each product view a score based on a combination of views and price and 
   // then rank them from highest to lowest to find the best potential upsell offers.
-  #rankItems(productViews: ProductViewData[]){
-    const scoredProductViews: ProductViewData[] = productViews.map(productView => {
-      const upsellScore = this.#calculateUpsellScore(productView);
-
-      return [productView[0], upsellScore]
+  #rankItems(productViews: InMemoryDatabase): ItemViewData[]{
+    const scoredItemViews: ItemViewData[] = [];
+    productViews.forEach(item => {
+      const computedScore = this.#calculateUpsellScore(item);
+      item.score = computedScore;
+      scoredItemViews.push(item);
     });
 
-    const sortedProductViews = scoredProductViews.sort(this.#compareProductViews);
+    const sortedProductViews = scoredItemViews.sort(this.#compareProductViews).reverse();
 
     return sortedProductViews;
   }
   
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#description
-  #compareProductViews(a: ProductViewData, b: ProductViewData): number{
-    if (a[1] < b[1]) {
+  #compareProductViews(a: ItemViewData, b: ItemViewData): number{
+    if (a.score === undefined || b.score === undefined) {
+      return 0;
+    }
+
+    if (a.score < b.score) {
       return -1;
     }
 
-    if (a[1] > b[1]) {
+    if (a.score > b.score) {
       return 1;
     }
 

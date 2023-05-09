@@ -1,8 +1,7 @@
 import { UpsellOfferInstaller } from "./UpsellOfferInstaller.js";
-import { DataRepository, ProductInfo } from "./repository/DataRepositoryInterface.js";
-import { LocalStorageDataRepository } from "./repository/LocalStorageDataRepository";
+import { DataRepository, Item } from "./repository/DataRepositoryInterface.js";
+import { LocalStorageDataRepository } from "./repository/LocalStorageDataRepository.js";
 import { BlendedUpsellStrategy } from "./strategies/BlendedUpsellStrategy.js";
-import { DefaultUpsellStrategy } from "./strategies/DefaultUpsellStrategy.js";
 import { UpsellStrategy } from "./strategies/UpsellStrategyInterface.js";
 
 export enum UpsellStrategyOption { BLENDED, DEFAULT };
@@ -20,7 +19,7 @@ export class InCartUpsellService {
 
   #upsellStrategy: UpsellStrategy
 
-  #upsellProduct?: ProductInfo
+  #upsellProduct?: Item
 
   #eligibleForTest: boolean;
 
@@ -36,6 +35,18 @@ export class InCartUpsellService {
   // Call this method only in the variant version. 
   static disableDefaultUpsellMethod(): void {
     window.OCUIncart = null;
+  }
+
+  /**
+   * Registers a page view for a given item
+   */
+  public registerProductView() {
+    if (window.item === undefined || window.item === null) {
+      return;
+    } else {
+      const item: Item = window.item;
+      this.#dataRepository.registerItemView(item);  
+    }
   }
 
   #isUserEligibleForTest(): boolean {
@@ -82,7 +93,7 @@ export class InCartUpsellService {
       case UpsellStrategyOption.BLENDED:
         return new BlendedUpsellStrategy(dataSource);
       default:
-        return new DefaultUpsellStrategy();
+        throw new Error("Invalid Upsell Strategy option");
     }
   }
 

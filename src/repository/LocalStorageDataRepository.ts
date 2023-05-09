@@ -1,4 +1,4 @@
-import { DataRepository, InCartItem, InMemoryDatabase, Item, ItemViewData, ProductViewData } from "./DataRepositoryInterface.js";
+import { DataRepository, InCartItem, InMemoryDatabase, Item, ItemViewData } from "./DataRepositoryInterface.js";
 
 const localStorageKey = 'looptimize_icu';
 
@@ -28,7 +28,7 @@ export class LocalStorageDataRepository implements DataRepository {
     this.#persistData();
   }
 
-  getInCartProducts(): InCartItem[] {
+  get itemsInCart(): InCartItem[] {
     if(window.OCUIncart.cart_items !== undefined){
       const inCartItems = window.OCUIncart.cart_items as InCartItem[];
       return inCartItems;
@@ -37,13 +37,9 @@ export class LocalStorageDataRepository implements DataRepository {
     throw new Error("Unable to determine in cart items");
   }
 
-  get productsViewed(): InMemoryDatabase {
+  public get productsViewed(): InMemoryDatabase {
     this.#productViews = this.#fetchDataFromLocalStorage();
     return this.#productViews;
-  }
-
-  getItemsViewed(): ProductViewData[] {
-    throw new Error("Method not implemented.");
   }
 
   #persistData(): void {
