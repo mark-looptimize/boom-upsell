@@ -1,4 +1,4 @@
-import { ServiceLogger } from "../Logger.js";
+import { ServiceLogger } from "../services/Logger.js";
 import { DataRepository, InCartItem, InMemoryDatabase, Item, ItemViewData } from "./DataRepositoryInterface.js";
 
 const localStorageKey = 'looptimize_icu';
@@ -11,9 +11,22 @@ export class LocalStorageDataRepository implements DataRepository {
     this.#productViews = this.#fetchDataFromLocalStorage();
   }
 
-  registerItemView(item: Item): void {
+  public get itemsInCart(): InCartItem[] {
+    if(window.OCUIncart.cart_items !== undefined){
+      const inCartItems = window.OCUIncart.cart_items as InCartItem[];
+      ServiceLogger.log(`Found ${inCartItems.length} items in the cart`);
+      return inCartItems;
+    }
+
+    throw new Error("Unable to determine in cart items");
+  }
+
+  public registerItemView(item: Item, id: number): void {
     this.#productViews = this.#fetchDataFromLocalStorage();
-    const productId = item.ProductID;
+    // const productId = item.ProductID;
+    const productId = id;
+    // Overwrite the original product ID with the one we need
+    item.ProductID = id;
 
     if (this.#productViews.has(productId)) {
       ServiceLogger.log(`Incrementing product view count for item: ${productId}`);
@@ -30,18 +43,8 @@ export class LocalStorageDataRepository implements DataRepository {
     this.#persistData();
   }
 
-  get itemsInCart(): InCartItem[] {
-    if(window.OCUIncart.cart_items !== undefined){
-      const inCartItems = window.OCUIncart.cart_items as InCartItem[];
-      ServiceLogger.log(`Found ${inCartItems.length} items in the cart`);
-      return inCartItems;
-    }
-
-    throw new Error("Unable to determine in cart items");
-  }
-
   public get productsViewed(): InMemoryDatabase {
-    // this.#productViews = this.#fetchDataFromLocalStorage();
+    this.#productViews = this.#fetchDataFromLocalStorage();
     return this.#productViews;
   }
 
@@ -55,8 +58,9 @@ export class LocalStorageDataRepository implements DataRepository {
   #fetchDataFromLocalStorage(): InMemoryDatabase {
     const localStorageData = window.localStorage.getItem(localStorageKey);
     const tempMap = new Map<number, ItemViewData>();
+    const localStorageIsEmpty = (localStorageData === null || localStorageData === '{}');
 
-    if (localStorageData === null || localStorageData === '{}') {
+    if (localStorageIsEmpty) {
       ServiceLogger.log("No Existing LocalStorage Data Found. Creating New InMemoryDatabase");
       return tempMap;
     } else {

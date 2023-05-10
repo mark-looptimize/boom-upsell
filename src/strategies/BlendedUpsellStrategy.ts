@@ -1,4 +1,4 @@
-import { ServiceLogger } from "../Logger.js";
+import { ServiceLogger } from "../services/Logger.js";
 import { DataRepository, InMemoryDatabase, Item, ItemViewData } from "../repository/DataRepositoryInterface.js";
 import { UpsellStrategy } from "./UpsellStrategyInterface.js";
 
@@ -15,31 +15,30 @@ export class BlendedUpsellStrategy implements UpsellStrategy {
     this.#dataRepository = dataRepository;
   }
 
-  findBestOffer(): Item {
+  public findBestOffer(): Item {
     const itemsInCart = this.#dataRepository.itemsInCart;
     const viewedItems = this.#dataRepository.productsViewed;
+
     ServiceLogger.log(`Finding the best offer. Current Items in cart: ${itemsInCart.length} Total Viewed Products: ${viewedItems.size} `);
+    // Rank them by our scoring criteria
     const rankedItems = this.#rankItems(viewedItems);
 
-    let bestOffer: Item | undefined;
-
-    // Move through the ranked list of product views and check if that item
-    // already exists in the cart and stop looking when we find a match
-    // https://masteringjs.io/tutorials/fundamentals/foreach-break
-    rankedItems.every(item => {
-      const productId = item.product.ProductID;
-      const matchingItemInCart = itemsInCart.find(item => {item.product_id = productId});
-      if (!matchingItemInCart) {
-        ServiceLogger.log(`Upsell Offer found: ${item.product.Name}`)
-        bestOffer = item.product;
-        return false;
-      }
-      ServiceLogger.log(`${item.product.Name} is already in the cart`);
-      return true;
+    // Now remove any that are already in the cart. Note we have to check for both name and id for "reasons"
+    const eligibleRankedItems = rankedItems.filter(item => {
+      const alreadyInCart = itemsInCart.some(inCartItem => {
+        const idsMatch = inCartItem.product_id === item.product.ProductID;
+        const namesMatch = inCartItem.product_title === item.product.Name;
+        const matchFound = idsMatch || namesMatch;
+        ServiceLogger.log(`Comparing Cart Product: ${inCartItem.product_title} with id: ${inCartItem.product_id} with ${item.product.Name} id: ${item.product.ProductID} Match Found: ${matchFound}`);
+        return matchFound;
+      });
+      return !alreadyInCart;
     });
 
-    if (bestOffer !== undefined) {
-      return bestOffer;
+    // Return the first item in the list
+    if (eligibleRankedItems.length > 0) {
+      ServiceLogger.log(`Upsell Offer found: ${eligibleRankedItems[0].product.Name}`);
+      return eligibleRankedItems[0].product;
     }
 
     // If we made it this far we don't have any good offers worth showing.

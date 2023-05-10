@@ -1,4 +1,4 @@
-import { DataSource, FeatureConfiguration, InCartUpsellService, UpsellStrategyOption } from "./InCartUpsellService.js";
+import { DataSource, FeatureConfiguration, InCartUpsellService, UpsellStrategyOption } from "./services/InCartUpsellService.js";
 
 const inCartUpsellConfig: FeatureConfiguration = {
   dataSource: DataSource.LOCAL_STORAGE,

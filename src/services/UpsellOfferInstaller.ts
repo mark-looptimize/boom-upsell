@@ -1,4 +1,4 @@
-import { Item } from "./repository/DataRepositoryInterface.js";
+import { Item } from "../repository/DataRepositoryInterface.js";
 
 // Responsible for making sure the upsell offer element is correctly placed on the page
 export class UpsellOfferInstaller {
@@ -9,7 +9,7 @@ export class UpsellOfferInstaller {
     this.#installComponent();
   }
 
-  #installComponent(){
+  #installComponent(): void {
     console.log(this.#product);
   }
 }

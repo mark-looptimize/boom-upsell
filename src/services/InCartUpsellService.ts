@@ -1,9 +1,9 @@
 import { ServiceLogger } from "./Logger.js";
 import { UpsellOfferInstaller } from "./UpsellOfferInstaller.js";
-import { DataRepository, Item } from "./repository/DataRepositoryInterface.js";
-import { LocalStorageDataRepository } from "./repository/LocalStorageDataRepository.js";
-import { BlendedUpsellStrategy } from "./strategies/BlendedUpsellStrategy.js";
-import { UpsellStrategy } from "./strategies/UpsellStrategyInterface.js";
+import { DataRepository, Item } from "../repository/DataRepositoryInterface.js";
+import { LocalStorageDataRepository } from "../repository/LocalStorageDataRepository.js";
+import { BlendedUpsellStrategy } from "../strategies/BlendedUpsellStrategy.js";
+import { UpsellStrategy } from "../strategies/UpsellStrategyInterface.js";
 
 export enum UpsellStrategyOption { BLENDED, DEFAULT };
 
@@ -13,18 +13,18 @@ export interface FeatureConfiguration {
   debugMode?: boolean,
   dataSource: DataSource,
   upsellStrategy: UpsellStrategyOption,
-}
+};
 
 export class InCartUpsellService {
   #config: FeatureConfiguration;
 
-  #dataRepository: DataRepository
+  #dataRepository: DataRepository;
 
-  #upsellStrategy?: UpsellStrategy
+  #upsellStrategy?: UpsellStrategy;
 
-  #upsellProduct?: Item
+  #upsellProduct?: Item;
 
-  #eligibleForTest: boolean = false;;
+  #eligibleForTest: boolean = false;
 
   constructor(config: FeatureConfiguration) {
     if (config.debugMode === true) {
@@ -35,34 +35,38 @@ export class InCartUpsellService {
     this.#dataRepository = this.#getDataRepository(config.dataSource);
   }
 
+  public get upsellProduct(): Item | undefined {
+    return this.#upsellProduct;
+  }
+
   /**
    * Registers a page view for a given item
    */
   public registerProductView(): void {
-    if (window.item === undefined || window.item === null) {
-      ServiceLogger.error("No Item found on the page");
+    if (window.item === undefined || window.item === null || typeof(window.ShopifyAnalytics.meta.product.variants[0].id) !== 'number' || window.ShopifyAnalytics.meta.product.variants.length !== 1) {
+      ServiceLogger.error("Unable to fetch correct item details");
       return;
     } else {
       const item: Item = window.item;
-      this.#dataRepository.registerItemView(item);  
+      this.#dataRepository.registerItemView(item, window.ShopifyAnalytics.meta.product.variants[0].id);  
     }
   }
 
   /**
    * Checks if we should include the user in the test
    */
-  public checkTestEligibility(): void {
+  public async checkTestEligibility(): Promise<void> {
     this.#upsellStrategy = this.#initializeUpsellStrategy(this.#config.upsellStrategy, this.#dataRepository);
-    this.#eligibleForTest = this.#isUserEligibleForTest();
+    this.#eligibleForTest = await this.#isUserEligibleForTest();
     if (this.#eligibleForTest) {
       this.#onTestEligibility();
     }
   }
 
-  #isUserEligibleForTest(): boolean {
+  async #isUserEligibleForTest(): Promise<boolean> {
     try {
-      this.#checkForDealbreakers();
       this.#upsellProduct = this.#upsellStrategy!.findBestOffer();
+      await this.#checkForDealbreakers();
       // The user is eligible for the test!
       // Only now should we figure out if we should show A or B not before.
       return true;
@@ -72,11 +76,13 @@ export class InCartUpsellService {
     }
   }
 
-  #checkForDealbreakers(): void{
-    const supportsCustomElements = ('customElements' in window)
+  async #checkForDealbreakers(): Promise<void>{
+    const supportsCustomElements = ('customElements' in window);
     if (!supportsCustomElements) {
       throw new Error("Browser does not support Custom Elements");
     }
+    // Load the component here dynamically to reduce initial bundle size
+    await import('../component/incart-upsell.js');
   }
 
   #onTestEligibility(): void {
@@ -86,8 +92,7 @@ export class InCartUpsellService {
     }
 
     // Step 2: Install an event listener
-    window.addEventListener('upsell_test_control', this.#implementControlExperience);
-    window.addEventListener('upsell_variant_group', this.#implementVariantExperience);
+    this.#addOptimizeEventListeners();
 
     // Step 3: Communicate test eligibility with the testing tool via custom event
     window.dataLayer?.push({
@@ -115,16 +120,29 @@ export class InCartUpsellService {
     }
   }
 
-  #implementControlExperience(){
+  #implementControlExperience(): void {
     ServiceLogger.log("Implementing Default Experience");
+    this.#removeOptimizeEventListeners();
   }
 
-  #implementVariantExperience(){
+  #implementVariantExperience(): void {
     ServiceLogger.log("Implementing Variant Experience");
-
+    this.#removeOptimizeEventListeners();
     // Disable the default experience
     window.OCUIncart = null;
 
     new UpsellOfferInstaller(this.#upsellProduct!);
+  }
+
+  #removeOptimizeEventListeners(): void {
+    ServiceLogger.log("Removing experiment event listeners");
+    window.removeEventListener('handleUpsellExperimentControl', this.#implementControlExperience);
+    window.removeEventListener('handleUpsellExperimentVariant', this.#implementVariantExperience);
+  }
+
+  #addOptimizeEventListeners(): void {
+    ServiceLogger.log("Installing experiment event listeners");
+    window.addEventListener('handleUpsellExperimentControl', this.#implementControlExperience);
+    window.addEventListener('handleUpsellExperimentVariant', this.#implementVariantExperience);
   }
 }

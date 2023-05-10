@@ -1,8 +1,8 @@
 export interface DataRepository {
-  get itemsInCart(): InCartItem[]
-  registerItemView(item: Item): void
-  get productsViewed(): InMemoryDatabase
-}
+  get itemsInCart(): InCartItem[];
+  registerItemView(item: Item, id: number): void;
+  get productsViewed(): InMemoryDatabase;
+};
 
 
 export interface InCartItem {
@@ -10,11 +10,11 @@ export interface InCartItem {
   quantity: number,
   product_title: string,
   final_price: number
-}
+};
 
 export interface OcuIncartService {
   cart_items: InCartItem[]
-}
+};
 
 // Data type represented by window.item
 export interface Item {
@@ -26,12 +26,12 @@ export interface Item {
   Price: string,
   ProductID: number,
   URL: string
-}
+};
 
 export interface ItemViewData {
   views: number,
   score?: number,
   product: Item
-}
+};
 
 export type InMemoryDatabase = Map<number, ItemViewData>;
