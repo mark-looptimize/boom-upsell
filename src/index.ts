@@ -6,4 +6,8 @@ const inCartUpsellConfig: FeatureConfiguration = {
   debugMode: true
 };
 
-window.looptimize = window.looptimize || new InCartUpsellService(inCartUpsellConfig); 
+window.looptimize = window.looptimize || new InCartUpsellService(inCartUpsellConfig);
+
+window.dataLayer?.push({
+  "event": "in-cart-upsell-script-installed"
+});

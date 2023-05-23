@@ -40,7 +40,7 @@ export class IncartUpsell extends LitElement {
 
     .special-offer {
       margin: auto;
-      max-width: 30rem;
+      max-width: 45rem;
       margin-top: 1rem;
       padding: 2rem 5rem;
       background-color: white;
@@ -48,6 +48,7 @@ export class IncartUpsell extends LitElement {
       border-radius: 30px;
       display: flex;
       gap: 2rem;
+      flex-direction: column;
     }
 
     .special-offer img {
@@ -62,6 +63,12 @@ export class IncartUpsell extends LitElement {
 
     .special-offer a:hover {
       text-decoration: underline;
+    }
+
+    @media screen and (min-width: 50rem){
+      .special-offer {
+        flex-direction: row;
+      }
     }
   `;
 
