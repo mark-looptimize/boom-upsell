@@ -21,7 +21,7 @@ export interface Item {
   Brand: string,
   Categories: string[],
   CompareAtPrice: string,
-  ImageUrl: string,
+  ImageURL: string,
   Name: string,
   Price: string,
   ProductID: number,

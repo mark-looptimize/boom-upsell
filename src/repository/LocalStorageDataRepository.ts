@@ -12,13 +12,13 @@ export class LocalStorageDataRepository implements DataRepository {
   }
 
   public get itemsInCart(): InCartItem[] {
-    if(window.OCUIncart.cart_items !== undefined){
+    if(window.OCUIncart?.cart_items !== undefined){
       const inCartItems = window.OCUIncart.cart_items as InCartItem[];
       ServiceLogger.log(`Found ${inCartItems.length} items in the cart`);
       return inCartItems;
     }
-
-    throw new Error("Unable to determine in cart items");
+    ServiceLogger.error('No existing items found in the cart');
+    return [];
   }
 
   public registerItemView(item: Item, id: number): void {

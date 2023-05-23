@@ -6,4 +6,4 @@ const inCartUpsellConfig: FeatureConfiguration = {
   debugMode: true
 };
 
-window.looptimize = window.looptimize || new InCartUpsellService(inCartUpsellConfig);
+window.looptimize = window.looptimize || new InCartUpsellService(inCartUpsellConfig); 

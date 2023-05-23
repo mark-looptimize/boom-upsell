@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Element Test Page</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Open Sans', sans-serif;
+      }
+    </style>
+</head>
+<body>
+  <main></main>
+  <script type="importmap">
+    {
+      "imports": {
+        "lit": "https://ga.jspm.io/npm:lit@2.7.4/index.js",
+        "lit-html": "https://ga.jspm.io/npm:lit-html@2.7.2/development/lit-html.js",
+        "lit/decorators.js": "https://ga.jspm.io/npm:lit@2.7.4/decorators.js"
+      },
+      "scopes": {
+        "https://ga.jspm.io/": {
+          "@lit/reactive-element": "https://ga.jspm.io/npm:@lit/reactive-element@1.6.1/development/reactive-element.js",
+          "@lit/reactive-element/decorators/": "https://ga.jspm.io/npm:@lit/reactive-element@1.6.1/development/decorators/",
+          "lit-element/lit-element.js": "https://ga.jspm.io/npm:lit-element@3.3.2/development/lit-element.js",
+          "lit-html/is-server.js": "https://ga.jspm.io/npm:lit-html@2.7.2/development/is-server.js"
+        }
+      }
+    }
+  </script>
+  <script type="module">
+    setupDataLayer();
+    import * as lit from "lit";
+    import '../lib/index.js';
+    setFakeData();
+    await window.looptimize.checkTestEligibility();
+    const upsellComponent = document.createElement('incart-upsell');
+    const cartSection = document.querySelector('main');
+    cartSection.insertAdjacentElement('afterBegin', upsellComponent);
+
+    function setFakeData() {
+      window.localStorage.removeItem('looptimize_icu');
+      const fakeData = `[[45696091218,{"product":{"Name":"Boomstick Trio","ProductID":45696091218,"Categories":["All","Best Sellers","boom sticks","Boomsticks","Custom Boom Bag","Empty Cart - Recommended Products","Holiday Collections","holiday products","Holiday Savings","Holiday Store Wide","holiday-2021(1)","holiday-2021-first-1","holiday-2021-first-brow","holiday-2021-first-ny","holiday-2022-first","holiday-2022-first2","Home Slider","Makeup","Mobile App Collection","Store","Store Main","Store Order","store X","store-anniversary"],"ImageURL":"https://cdn.shopify.com/s/files/1/0404/9121/products/Boomstick_Trio_01_grande.jpg?v=1649082869","URL":"https://www.boombycindyjoseph.com/products/boomstick-trio","Brand":"BOOM! by Cindy Joseph","Price":"$79.00","CompareAtPrice":"$96.00"},"views":1}],[40025342705777,{"product":{"Name":"Boomstick Color","ProductID":40025342705777,"Categories":["All","Best Sellers","boom sticks","Boomsticks","Custom Boom Bag","Empty Cart - Recommended Products","Holiday Collections","holiday products","Holiday Savings","Holiday Store First","holiday-2022-first","holiday-2022-first2","Home Slider","Makeup","Mobile App Collection","Store","Store Main","Store Order","store X","store-anniversary"],"ImageURL":"https://cdn.shopify.com/s/files/1/0404/9121/products/Boomstick_Color_01_fc032838-d9ed-421b-b680-656ff7a88c61_grande.jpg?v=1567782097","URL":"https://www.boombycindyjoseph.com/products/boomstick-color","Brand":"BOOM! by Cindy Joseph","Price":"$28.00","CompareAtPrice":"$32.00"},"views":3}],[45696084626,{"product":{"Name":"Boomstick Glimmer","ProductID":45696084626,"Categories":["All","boom sticks","Boomsticks","Custom Boom Bag","Empty Cart - Recommended Products","Holiday Collections","holiday products","Holiday Savings","Holiday Store First","holiday-2022-first","holiday-2022-first2","Home Slider","Makeup","Mobile App Collection","Store","Store Main","Store Order","store X","store-anniversary"],"ImageURL":"https://cdn.shopify.com/s/files/1/0404/9121/products/Boomstick_Glimmer_01_5185720b-5dcd-4597-9853-73d0655ef71e_grande.jpg?v=1567782156","URL":"https://www.boombycindyjoseph.com/products/boomstick-glimmer","Brand":"BOOM! by Cindy Joseph","Price":"$28.00","CompareAtPrice":"$32.00"},"views":1}],[45696084882,{"product":{"Name":"Boomstick Glo","ProductID":45696084882,"Categories":["All","boom sticks","Boomsticks","Custom Boom Bag","Empty Cart - Recommended Products","Holiday Collections","holiday products","Holiday Savings","Holiday Store First","holiday-2022-first","holiday-2022-first2","Home Slider","Makeup","Mobile App Collection","Store","Store Main","Store Order","store X","store-anniversary"],"ImageURL":"https://cdn.shopify.com/s/files/1/0404/9121/products/Boomstick_Glo_01_f96365dc-b0bd-4221-900b-1c07d70a7daf_grande.jpg?v=1613408839","URL":"https://www.boombycindyjoseph.com/products/boomstick-glo","Brand":"BOOM! by Cindy Joseph","Price":"$28.00","CompareAtPrice":"$32.00"},"views":1}],[40124692922481,{"product":{"Name":"Boom Silver - Brightening and Toning Shampoo","ProductID":40124692922481,"Categories":["All","Custom Boom Bag","holiday products","Holiday Store Second","Skincare & Haircare","Store Order"],"ImageURL":"https://cdn.shopify.com/s/files/1/0404/9121/products/Boom_Silver_shampoo_1x1_f560fbe2-a362-45da-9785-174de7b94365_grande.jpg?v=1674592913","URL":"https://www.boombycindyjoseph.com/products/boom-silver-brightening-and-toning-shampoo","Brand":"BOOM! by Cindy Joseph","Price":"$36.00","CompareAtPrice":"$0.00"},"views":1}]]`;
+      window.localStorage.setItem('looptimize_icu', fakeData);
+    }
+
+    function setupDataLayer() {
+      window.dataLayer = window.dataLayer || [];
+    }
+  </script>
+</body>
+</html>
