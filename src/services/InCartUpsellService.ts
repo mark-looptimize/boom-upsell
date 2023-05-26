@@ -56,11 +56,16 @@ export class InCartUpsellService {
    * Checks if we should include the user in the test
    */
   public async checkTestEligibility(): Promise<void> {
+    const alreadyUpsold = window.sessionStorage.getItem('in_cart_promo') === 'added';
+    if (alreadyUpsold) {
+      this.#handleDefaultUpsell();
+    }
     this.#upsellStrategy = this.#initializeUpsellStrategy(this.#config.upsellStrategy, this.#dataRepository);
     this.#eligibleForTest = await this.#isUserEligibleForTest();
     if (this.#eligibleForTest) {
       this.#onTestEligibility();
     }
+
   }
 
   async #isUserEligibleForTest(): Promise<boolean> {
@@ -128,8 +133,7 @@ export class InCartUpsellService {
   #implementVariantExperience(): void {
     ServiceLogger.log("Implementing Variant Experience");
     this.#removeOptimizeEventListeners();
-    // Disable the default experience
-    window.OCUIncart = null;
+    this.#handleDefaultUpsell();
 
     new UpsellOfferInstaller(this.#upsellProduct!);
   }
@@ -144,5 +148,11 @@ export class InCartUpsellService {
     ServiceLogger.log("Installing experiment event listeners");
     window.addEventListener('handleUpsellExperimentControl', this.#implementControlExperience);
     window.addEventListener('handleUpsellExperimentVariant', this.#implementVariantExperience);
+  }
+
+  #handleDefaultUpsell(){
+    // Disable the default experience
+    window.OCUIncart = null;
+    ServiceLogger.log("Disabling the default upsell experience");
   }
 }

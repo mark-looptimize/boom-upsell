@@ -3,7 +3,7 @@ import { DataSource, FeatureConfiguration, InCartUpsellService, UpsellStrategyOp
 const inCartUpsellConfig: FeatureConfiguration = {
   dataSource: DataSource.LOCAL_STORAGE,
   upsellStrategy: UpsellStrategyOption.BLENDED,
-  debugMode: true
+  debugMode: false
 };
 
 window.looptimize = window.looptimize || new InCartUpsellService(inCartUpsellConfig);
